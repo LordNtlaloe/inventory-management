@@ -13,7 +13,7 @@ export default function VerificationForm() {
     const [isLoading, setIsLoading] = useState(true)
 
     const searchParams = useSearchParams()
-    const token = searchParams.get("token")
+    const token = searchParams?.get("token")
 
     const onSubmit = useCallback(async () => {
         if (!token) {

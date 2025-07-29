@@ -1,9 +1,13 @@
-import React from 'react';
+// app/auth/layout.tsx
+import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
 
-export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="w-screen h-screen flex items-center justify-center">
+        <AuthLayoutTemplate
+            title="Authentication"
+            description="Welcome back! Please enter your details."
+        >
             {children}
-        </div>
+        </AuthLayoutTemplate>
     );
 }

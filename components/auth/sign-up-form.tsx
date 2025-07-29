@@ -51,7 +51,7 @@ export default function SignUpForm() {
     }
 
     return (
-        <CardWrapper showSocial headerLabel={'Create Account'} backButtonLabel={"Already Have An Account?"} backButtonHref={'/sign-in'}>
+        <CardWrapper headerLabel={'Create Account'} backButtonLabel={"Already Have An Account?"} backButtonHref={'/sign-in'} showSocial>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
                     <div className="space-y-4">

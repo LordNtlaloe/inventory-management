@@ -1,15 +1,16 @@
 "use server";
 import * as z from "zod";
-import { LoginSchema, SignUpSchema, PasswordResetSchema, NewPasswordSchema } from "@/schemas";
+import { LoginSchema, SignUpSchema, PasswordResetSchema, NewPasswordSchema,UpdatePasswordSchema } from "@/schemas";
 import { connectToDB } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { getUserByEmail } from "@/actions/user.actions";
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
 import { generateVerificationToken, generatePasswordResetToken } from "@/lib/tokens";
 import { sendTokenEmail } from "@/lib/mail";
 import { signOut } from "next-auth/react";
+
 
 let dbConnection: any;
 let database: any;
@@ -31,16 +32,21 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         return { error: "Invalid Fields" }
     }
 
-    const { email, password } = validatedFields.data;
+    const { email, password } = validatedFields.data;    
 
-    const existingUser = await getUserByEmail(email)
-
-    // Fixed: Check if user doesn't exist OR has missing email/password
-    if (!existingUser || !existingUser.email || !existingUser.password) {
+    const existingUser = await getUserByEmail(email);
+    console.log(existingUser)
+    // Check if user exists
+    if (!existingUser || !existingUser.email) {
         return { error: "Email Does Not Exist" }
     }
 
-    // Check if email is verified
+    // Check if this is an OAuth user (no password field)
+    if (!existingUser.password) {
+        return { error: "This email is associated with a Google account. Please sign in with Google." }
+    }
+
+    // Check if email is verified (only for credential users)
     if (!existingUser.emailVerified) {
         const tokenResult = await generateVerificationToken(existingUser.email);
 
@@ -51,7 +57,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         // Send verification email
         const emailResult = await sendTokenEmail({
             to: existingUser.email,
-            name: `${existingUser.first_name} ${existingUser.last_name}`,
+            name: existingUser.name || `${existingUser.first_name} ${existingUser.last_name}`,
             subject: "Verify Your Email Address",
             token: tokenResult.token as string,
             tokenType: 'verification'
@@ -66,7 +72,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 
     try {
         await signIn("credentials", {
-            email,
+            email: email,
             password,
             redirectTo: DEFAULT_LOGIN_REDIRECT
         })
@@ -452,6 +458,95 @@ export const newPassword = async (
     }
 };
 
-export const logout = async() => {
+export const logout = async () => {
     await signOut();
 }
+
+export const updatePassword = async (formData: FormData) => {
+  try {
+    // Get current session
+    const session = await auth();
+    
+    if (!session?.user?.email) {
+      return { error: { general: ["You must be logged in to change your password"] } };
+    }
+
+    // Extract form data
+    const values = {
+      current_password: formData.get("current_password") as string,
+      password: formData.get("password") as string,
+      password_confirmation: formData.get("password_confirmation") as string,
+    };
+
+    // Validate input
+    const validatedFields = UpdatePasswordSchema.safeParse(values);
+    
+    if (!validatedFields.success) {
+      const errors: Record<string, string[]> = {};
+      validatedFields.error.errors.forEach((error) => {
+        const field = error.path[0] as string;
+        if (!errors[field]) {
+          errors[field] = [];
+        }
+        errors[field].push(error.message);
+      });
+      return { error: errors };
+    }
+
+    const { current_password, password } = validatedFields.data;
+
+    // Initialize database connection if needed
+    if (!dbConnection) await init();
+
+    // Get current user from database
+    const user = await getUserByEmail(session.user.email);
+    
+    if (!user) {
+      return { error: { general: ["User not found"] } };
+    }
+
+    // Check if user has a password (not OAuth user)
+    if (!user.password) {
+      return { error: { general: ["This account uses OAuth authentication and cannot change password"] } };
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(current_password, user.password);
+    
+    if (!isCurrentPasswordValid) {
+      return { error: { current_password: ["Current password is incorrect"] } };
+    }
+
+    // Check if new password is different from current
+    const isSamePassword = await bcrypt.compare(password, user.password);
+    
+    if (isSamePassword) {
+      return { error: { password: ["New password must be different from current password"] } };
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update password in database
+    const usersCollection = database.collection("users");
+    const updateResult = await usersCollection.updateOne(
+      { email: session.user.email },
+      {
+        $set: {
+          password: hashedPassword,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return { error: { general: ["Failed to update password"] } };
+    }
+
+    return { success: "Password updated successfully" };
+
+  } catch (error: any) {
+    console.error("An error occurred updating password:", error.message);
+    return { error: { general: ["Something went wrong. Please try again."] } };
+  }
+};

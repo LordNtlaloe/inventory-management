@@ -1,16 +1,9 @@
-import Navbar from "./_components/Navbar";
+import React from 'react'
 
-interface ProtectedLayoutProps {
-    children: React.ReactNode
-}
-
-const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-    return(
-        <div className="w-screen h-screen flex flex-col gap-y-10 items-center justify-center">
-            <Navbar />
+export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
+    return (
+        <div className='h-full flex items-center justify-center'>
             {children}
         </div>
     )
 }
-
-export default ProtectedLayout;

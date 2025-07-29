@@ -4,6 +4,9 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth"
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { PosProvider } from "@/context/CartContext";
+
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
 //   subsets: ["latin"],
@@ -26,13 +29,17 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <SessionProvider session={session}>
-      <html lang="en">
-        <body className={`antialiased`}>
-          {children}
-          <Toaster />
-        </body>
-      </html>
-    </SessionProvider>
+    <html lang="en">
+      <body className={`antialiased`}>
+        <SessionProvider session={session}>
+          <ThemeProvider>
+            <PosProvider>
+              {children}
+            </PosProvider>
+            <Toaster />
+          </ThemeProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }
