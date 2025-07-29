@@ -69,7 +69,7 @@ export default function LoginPage() {
                 <title>Log in - {appConfig.name}</title>
             </Head>
 
-            <CardWrapper headerLabel={'Sign In'} backButtonLabel={''} backButtonHref={''} showSocial>
+            <CardWrapper headerLabel={'Sign In'} backButtonLabel={''} backButtonHref={''}>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                         <div className="grid gap-6">
