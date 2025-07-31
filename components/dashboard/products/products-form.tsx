@@ -711,7 +711,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                                 console.log("Current values:", values);
                                 onSubmit(values);
                             }}
-                            className="w-full bg-white hover:bg-gray-200"
+                            className="w-full bg-[#1D1D1D] text-white hover:bg-gray-200 dark:bg-white dark:text-[#101010]"
                             disabled={form.formState.isSubmitting}
                         >
                             Submit
