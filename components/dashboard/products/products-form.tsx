@@ -59,8 +59,6 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                 tire_type: initialData.tire_type || "",
                 load_index: initialData.load_index || "",
                 speed_rating: initialData.speed_rating || "",
-                tread_depth: initialData.tread_depth || undefined,
-                manufacture_date: initialData.manufacture_date ? new Date(initialData.manufacture_date) : undefined,
                 warranty_period: initialData.warranty_period || "",
                 bale_weight: initialData.bale_weight || 0,
                 bale_category: initialData.bale_category || "",
@@ -83,8 +81,6 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
             tire_type: "",
             load_index: "",
             speed_rating: "",
-            tread_depth: undefined,
-            manufacture_date: undefined,
             warranty_period: "",
             bale_weight: 0,
             bale_category: "",
@@ -184,8 +180,6 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                     tire_type: data.tire_type,
                     load_index: data.load_index,
                     speed_rating: data.speed_rating,
-                    ...(data.tread_depth && { tread_depth: data.tread_depth }),
-                    ...(data.manufacture_date && { manufacture_date: data.manufacture_date }),
                     ...(data.warranty_period && { warranty_period: data.warranty_period }),
                 };
             } else {
@@ -455,48 +449,6 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                                             <Input
                                                 {...field}
                                                 placeholder="e.g., H"
-                                                disabled={isSubmitting}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="tread_depth"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tread Depth (mm)</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                step="0.1"
-                                                {...field}
-                                                placeholder="e.g., 8.5"
-                                                min={0}
-                                                disabled={isSubmitting}
-                                                onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="manufacture_date"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Manufacture Date</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="date"
-                                                {...field}
-                                                value={field.value ? field.value.toISOString().split('T')[0] : ''}
-                                                onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
                                                 disabled={isSubmitting}
                                             />
                                         </FormControl>

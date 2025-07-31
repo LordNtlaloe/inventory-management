@@ -34,8 +34,6 @@ const transformProductToInitialData = (product: Product | null): InitialData | u
         ...(product.tire_type && { tire_type: product.tire_type }),
         ...(product.load_index && { load_index: product.load_index }),
         ...(product.speed_rating && { speed_rating: product.speed_rating }),
-        ...(product.tread_depth && { tread_depth: product.tread_depth }),
-        manufacture_date: formatDate(product.manufacture_date),
         ...(product.warranty_period && { warranty_period: product.warranty_period }),
         ...(product.bale_weight && { bale_weight: product.bale_weight }),
         ...(product.bale_category && { bale_category: product.bale_category }),

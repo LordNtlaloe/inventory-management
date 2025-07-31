@@ -291,9 +291,6 @@ export const columns: ColumnDef<Product>[] = [
                                     <p><strong>Type:</strong> {product.tire_type || "N/A"}</p>
                                     <p><strong>Load Index:</strong> {product.load_index || "N/A"}</p>
                                     <p><strong>Speed Rating:</strong> {product.speed_rating || "N/A"}</p>
-                                    {product.tread_depth && (
-                                        <p><strong>Tread Depth:</strong> {product.tread_depth}mm</p>
-                                    )}
                                 </div>
                             </TooltipContent>
                         </Tooltip>
@@ -371,11 +368,6 @@ export const columns: ColumnDef<Product>[] = [
                     {product.updated_at && product.updated_at !== product.created_at && (
                         <div className="text-muted-foreground">
                             Updated: {new Date(product.updated_at).toLocaleDateString()}
-                        </div>
-                    )}
-                    {product.category === "tire" && product.manufacture_date && (
-                        <div className="text-blue-600">
-                            Mfg: {new Date(product.manufacture_date).toLocaleDateString()}
                         </div>
                     )}
                 </div>

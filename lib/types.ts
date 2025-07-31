@@ -57,8 +57,6 @@ export type ProductFormData = {
   tire_type?: string;
   load_index?: string;
   speed_rating?: string;
-  tread_depth?: number;
-  manufacture_date?: Date;
   warranty_period?: string;
   // Bale fields
   bale_weight?: number;
@@ -89,9 +87,7 @@ export type InitialData = {
   tire_size?: string;
   tire_type?: string;
   load_index?: string;
-  speed_rating?: string;
-  tread_depth?: number;
-  manufacture_date?: string; // Note: string for initial data, Date for form
+  speed_rating?: string; 
   warranty_period?: string;
   // Bale fields
   bale_weight?: number;

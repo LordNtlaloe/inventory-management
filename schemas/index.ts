@@ -83,8 +83,6 @@ export const ProductSchema = z.object({
   tire_type: z.string().optional(),
   load_index: z.string().optional(),
   speed_rating: z.string().optional(),
-  tread_depth: z.number().positive().optional(),
-  manufacture_date: z.date().optional(),
   warranty_period: z.string().optional(),
 
   // Optional bale fields
