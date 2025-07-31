@@ -93,7 +93,18 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
     const form = useForm<ProductFormData>({
         resolver: zodResolver(ProductSchema),
         defaultValues: getDefaultValues(),
+        mode: "onChange",
     });
+
+    // Debug: Log form state - this will show why the button is disabled
+    console.log("=== FORM DEBUG INFO ===");
+    console.log("Form errors:", form.formState.errors);
+    console.log("Form is valid:", form.formState.isValid);
+    console.log("Form is submitting:", form.formState.isSubmitting);
+    console.log("Form values:", form.watch());
+    console.log("Is loading branches:", isLoadingBranches);
+    console.log("Button should be enabled:", !form.formState.isSubmitting && !isLoadingBranches);
+    console.log("======================");
 
     useEffect(() => {
         async function fetchBranches() {
@@ -162,6 +173,8 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
     };
 
     const onSubmit = async (data: ProductFormData) => {
+        console.log("Form submitted with data:", data); // Debug log
+
         try {
             setIsSubmitting(true);
 
@@ -200,12 +213,16 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                 };
             }
 
+            console.log("Cleaned data:", cleanedData); // Debug log
+
             let result;
             if (isEditMode && productId) {
                 result = await updateProduct(productId, cleanedData);
             } else {
                 result = await createProduct(cleanedData);
             }
+
+            console.log("API result:", result); // Debug log
 
             if (result?.success) {
                 toast.success(result.success);
@@ -221,6 +238,15 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
         }
     };
 
+    // Debug function to manually trigger form validation
+    const handleDebugSubmit = async () => {
+        console.log("Manual validation triggered");
+        const isValid = await form.trigger();
+        console.log("Form is valid after trigger:", isValid);
+        if (!isValid) {
+            console.log("Validation errors:", form.formState.errors);
+        }
+    };
 
     if (isLoadingProduct) {
         return (
@@ -237,6 +263,50 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
             <h2 className="text-xl font-bold mb-6">
                 {isEditMode ? 'Edit Product' : 'Add Product'}
             </h2>
+
+            {/* Debug Section - Enhanced */}
+            <div className="mb-4 p-4 bg-gray-100 rounded">
+                <h3 className="font-semibold mb-2">Debug Info:</h3>
+                <p>Form Valid: {form.formState.isValid ? 'Yes' : 'No'}</p>
+                <p>Is Submitting: {form.formState.isSubmitting ? 'Yes' : 'No'}</p>
+                <p>Loading Branches: {isLoadingBranches ? 'Yes' : 'No'}</p>
+                <p>Button Disabled: {(form.formState.isSubmitting || isLoadingBranches) ? 'Yes' : 'No'}</p>
+                <p>Category: {categoryValue || 'None selected'}</p>
+
+                {Object.keys(form.formState.errors).length > 0 && (
+                    <div className="mt-2 p-2 bg-red-100 rounded">
+                        <p className="font-semibold text-red-700">Validation Errors:</p>
+                        {Object.entries(form.formState.errors).map(([field, error]) => (
+                            <p key={field} className="text-red-600 text-sm">
+                                {field}: {error?.message || 'Invalid'}
+                            </p>
+                        ))}
+                    </div>
+                )}
+
+                <button
+                    type="button"
+                    onClick={handleDebugSubmit}
+                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm mr-2"
+                >
+                    Debug Validate
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => console.log("Current form state:", {
+                        values: form.getValues(),
+                        errors: form.formState.errors,
+                        isValid: form.formState.isValid,
+                        isDirty: form.formState.isDirty,
+                        isSubmitting: form.formState.isSubmitting
+                    })}
+                    className="mt-2 px-3 py-1 bg-green-500 text-white rounded text-sm"
+                >
+                    Log Full State
+                </button>
+            </div>
+
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     {/* Product Name */}
@@ -269,7 +339,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                                     <select
                                         {...field}
                                         className="w-full border rounded p-2 dark:bg-[#2E2E2E]"
-                                        disabled={isSubmitting || isEditMode} // Disabled in edit mode
+                                        disabled={isSubmitting || isEditMode}
                                     >
                                         <option value="">Select a category</option>
                                         <option value="bale">Bale</option>
@@ -363,8 +433,8 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                                         className="w-full border rounded p-2 dark:bg-[#2E2E2E]"
                                         aria-label="Grade select"
                                         disabled={isSubmitting}
-                                        value={field.value} // Ensure controlled value
-                                        onChange={(e) => field.onChange(e.target.value as ProductGrade)} // Explicit cast
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(e.target.value as ProductGrade)}
                                     >
                                         {Object.values(ProductGrade).map((grade) => (
                                             <option key={grade} value={grade}>
@@ -620,17 +690,33 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                         )}
                     />
 
-                    {/* Submit Button */}
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting || isLoadingBranches}
-                        className="w-full"
-                    >
-                        {isSubmitting
-                            ? (isEditMode ? "Updating..." : "Saving...")
-                            : (isEditMode ? "Update Product" : "Save Product")
-                        }
-                    </Button>
+                    {/* Submit Button - Enhanced for debugging */}
+                    <div className="space-y-2">
+                        {/* <Button
+                            type="submit"
+                            disabled={isSubmitting || isLoadingBranches}
+                            className="w-full"
+                        >
+                            {isSubmitting
+                                ? (isEditMode ? "Updating..." : "Saving...")
+                                : (isEditMode ? "Update Product" : "Save Product")
+                            }
+                        </Button> */}
+                        {/* Force submit button for testing */}
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                console.log("Force submit clicked");
+                                const values = form.getValues();
+                                console.log("Current values:", values);
+                                onSubmit(values);
+                            }}
+                            className="w-full bg-white hover:bg-gray-200"
+                            disabled={form.formState.isSubmitting}
+                        >
+                            Submit
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>
